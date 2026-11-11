@@ -1,0 +1,92 @@
+// src/generatePlan.js
+import { allRecipes } from './recipes.js';
+import { foodImages } from './images.js'; // NEW: Import images
+
+function getFilteredRecipes(profile) {
+  const { cuisine, dietType, healthCondition } = profile;
+  let baseRecipes = [...allRecipes];
+
+  const medicalRules = {
+    metabolic: ['White Rice', 'Honey', 'Sugar', 'Bread', 'Roti', 'Potatoes', 'Flattened Rice'],
+    digestive: ['Onion', 'Garlic', 'Beans', 'Lentils', 'Chickpeas', 'Milk', 'Cream', 'Spicy Chili'],
+    heart: ['Salt', 'Soy Sauce', 'Pickles', 'Papad', 'Processed Meat', 'Chips', 'Butter', 'Ghee', 'Mutton', 'Beef', 'Cheese'],
+    uric_acid: ['Beef', 'Mutton', 'Fish', 'Prawns', 'Spinach', 'Lentils', 'Chickpeas'],
+    kidney: ['Salt', 'Potatoes', 'Bananas', 'Oranges', 'Tomato']
+  };
+
+  if (healthCondition && healthCondition !== 'none' && medicalRules[healthCondition]) {
+    const badIngredients = medicalRules[healthCondition];
+    baseRecipes = baseRecipes.filter(recipe => {
+      return !recipe.ingredients.some(ing => 
+        badIngredients.some(bad => ing.name.toLowerCase().includes(bad.toLowerCase()))
+      );
+    });
+  }
+
+  if (cuisine && cuisine !== 'any') {
+    baseRecipes = baseRecipes.filter(r => r.cuisine === cuisine);
+  }
+  
+  if (dietType === 'veg') {
+    baseRecipes = baseRecipes.filter(r => r.dietType === 'veg' || r.dietType === 'vegan');
+  }
+
+  return baseRecipes;
+}
+
+export function generatePlan(profile) {
+  const { goal } = profile;
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const fullWeekPlan = [];
+
+  const baseRecipes = getFilteredRecipes(profile);
+
+  const goalMatches = baseRecipes.filter(r => r.goal === goal);
+  const finalRecipePool = goalMatches.length >= 5 ? goalMatches : baseRecipes;
+
+  let breakfasts = finalRecipePool.filter(r => r.type === 'breakfast');
+  let lunches = finalRecipePool.filter(r => r.type === 'lunch');
+  let dinners = finalRecipePool.filter(r => r.type === 'dinner');
+
+  const pickUnique = (list, fallbackList) => {
+    let sourceList = list.length > 0 ? list : fallbackList;
+    if (sourceList.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * sourceList.length);
+    const picked = sourceList[randomIndex];
+    if (list.length > 0) list.splice(randomIndex, 1);
+    return picked;
+  };
+
+  days.forEach((day) => {
+    const meals = [];
+    const b = pickUnique(breakfasts, finalRecipePool);
+    const l = pickUnique(lunches, finalRecipePool);
+    const d = pickUnique(dinners, finalRecipePool);
+
+    // NEW: Attach the image from foodImages to the meal before pushing it
+    if (b) meals.push({ ...b, image: foodImages[b.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" });
+    if (l) meals.push({ ...l, image: foodImages[l.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" });
+    if (d) meals.push({ ...d, image: foodImages[d.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" });
+
+    fullWeekPlan.push({ day, meals });
+  });
+
+  return fullWeekPlan;
+}
+
+export function swapSingleMeal(profile, mealType) {
+  const { goal } = profile;
+  const baseRecipes = getFilteredRecipes(profile);
+
+  const goalMatches = baseRecipes.filter(r => r.goal === goal);
+  const finalRecipePool = goalMatches.length >= 5 ? goalMatches : baseRecipes;
+
+  const typeMatches = finalRecipePool.filter(r => r.type === mealType);
+  
+  if (typeMatches.length === 0) return null; 
+  
+  const picked = typeMatches[Math.floor(Math.random() * typeMatches.length)];
+  
+  // NEW: Attach the image to the swapped meal as well
+  return { ...picked, image: foodImages[picked.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" };
+}
