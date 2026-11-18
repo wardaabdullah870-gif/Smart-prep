@@ -1,87 +1,51 @@
-// src/images.js
-export const foodImages = {
-  "Masala Omelette": "https://images.unsplash.com/photo-1510693206972-df098062cb71?w=600&q=80",
-  "Chicken Keema": "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80",
-  "Chicken Curry & Rice": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80",
-  "Mutton Rogan Josh": "https://images.unsplash.com/photo-1545247181-516773cae754?w=600&q=80",
-  "Fish Curry & Rice": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80",
-  "Tandoori Chicken": "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&q=80",
-  "Egg Bhurji": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",
-  "Chicken Biryani": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80",
-  "Prawn Masala": "https://images.unsplash.com/photo-1625943553852-781c6dd46faa?w=600&q=80",
-  "Chicken Karahi": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&q=80",
-  "Keema Matar": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=600&q=80",
-  "Dal & Roti": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-  "Chana Masala": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80",
-  "Aloo Gobi": "https://images.unsplash.com/photo-1589301760014-d929f39ce9b0?w=600&q=80",
-  "Paneer Tikka": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
-  "Palak Paneer": "https://images.unsplash.com/photo-1618449840665-9ed506d73a34?w=600&q=80",
-  "Rajma Chawal": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Bhindi Masala": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Chole Bhature": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Baingan Bharta": "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&q=80",
-  "Poha": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Chicken Noodle Soup": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",
-  "Teriyaki Salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80",
-  "Chicken Stir-fry": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80",
-  "Beef & Broccoli": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80",
-  "Kung Pao Chicken": "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=600&q=80",
-  "Thai Basil Chicken": "https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=600&q=80",
-  "Gyudon (Beef Bowl)": "https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&q=80",
-  "Chicken Adobo": "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=600&q=80",
-  "Miso Soup & Rice": "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80",
-  "Egg Fried Rice": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80",
-  "Mapo Tofu": "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&q=80",
-  "Veg Hakka Noodles": "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&q=80",
-  "Thai Green Curry": "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80",
-  "Bibimbap (Veg)": "https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=600&q=80",
-  "Tofu Veggie Stir-fry": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80",
-  "Overnight Oats": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?w=600&q=80",
-  "Greek Yogurt Bowl": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80",
-  "Protein Pancakes": "https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=600&q=80",
-  "Avocado Toast & Eggs": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",
-  "Tuna Salad Wrap": "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&q=80",
-  "Chicken & Quinoa": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80",
-  "Steak & Potato": "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80",
-  "Grilled Cheese": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&q=80",
-  "Pasta with Tomato Sauce": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80",
-  "Baked Salmon & Veggies": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80",
-  "Shakshuka": "https://images.unsplash.com/photo-1590412200988-a436970781fa?w=600&q=80",
-  "Hummus & Pita": "https://images.unsplash.com/photo-1577906096429-f73c2c312435?w=600&q=80",
-  "Falafel Bowl": "https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?w=600&q=80",
-  "Chicken Shawarma": "https://images.unsplash.com/photo-1529144415890-829cbc97c0b3?w=600&q=80",
-  "Lentil Soup": "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80",
-  "Breakfast Tacos": "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=600&q=80",
-  "Beef Burrito Bowl": "https://images.unsplash.com/photo-1543353071-873f17a7a088?w=600&q=80",
-  "Bean Quesadilla": "https://images.unsplash.com/photo-1618040996337-56904b7850b9?w=600&q=80",
-  "Chicken Fajitas": "https://images.unsplash.com/photo-1534352956036-cd81e27dd615?w=600&q=80",
-  "Fish Tacos": "https://images.unsplash.com/photo-1512838243191-e81e8f66f1fd?w=600&q=80",
-  
-  // NEW PAKISTANI RECIPES
-  "White Channy": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80",
-  "Black Channy": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80",
-  "Mash Daal": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-  "Moong Daal": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-  "Masar Daal": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-  "Chana Daal": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-  "Chicken Karahi": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&q=80",
-  "Aloo Matar Chicken": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80",
-  "Aloo Gosht": "https://images.unsplash.com/photo-1545247181-516773cae754?w=600&q=80",
-  "Nihari": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Haleem": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-  "Chicken Chany": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80",
-  "White Chicken": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&q=80",
-  "Chicken Manchurian": "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=600&q=80",
-  "Chicken Pulao": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=600&q=80",
-  "Chicken Biryani": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80",
-  "Mix Veg Rice": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80",
-  "Teendy": "https://images.unsplash.com/photo-1589301760014-d929f39ce9b0?w=600&q=80",
-  "Kaddu": "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&q=80",
-  "Loki": "https://images.unsplash.com/photo-1589301760014-d929f39ce9b0?w=600&q=80",
-  "Aloo Paratha": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Moli Paratha": "https://images.unsplash.com/photo-1626776876729-bab4369a5a5a?w=600&q=80",
-  "Egg Fry Paratha": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",
-  "Omlete Paratha": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",
-  "Bread Omlete": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",
-  "Slice Jam": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80"
+import { allRecipes } from './recipes.js';
+
+// real photos win if you add any later (src/assets/meals/<id>.jpg)
+const photos = import.meta.glob('./assets/meals/*.{jpg,jpeg,png,webp}', {
+  eager: true,
+  import: 'default',
+});
+
+const emojiRules = [
+  [/chicken|murgh|tandoori|manchurian|kung pao|adobo/i, '🍗'],
+  [/mutton|gosht|keema|beef|lamb|nihari|rogan/i, '🥩'],
+  [/egg|omelette|bhurji/i, '🍳'],
+  [/paratha|roti|bread|toast|pita|tortilla|taco|burrito|fajita|bhature/i, '🫓'],
+  [/noodle|hakka/i, '🍜'],
+  [/soup|haleem|stew/i, '🍲'],
+  [/rice|pulao|biryani|bibimbap|gyudon/i, '🍚'],
+  [/daal|dal|lentil|chan|chole|rajma|bean|hummus|falafel/i, '🫘'],
+  [/aloo|potato/i, '🥔'],
+  [/gobi|bhindi|baingan|tinda|kaddu|loki|veg|matar|mooli|avocado|salad|poha/i, '🥗'],
+];
+
+const colors = ['#fde68a', '#fecaca', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#fbcfe8'];
+
+// works with numeric or string ids (fixes the NaN color problem)
+const hash = (s) =>
+  [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0);
+
+const makeCard = (name, id) => {
+  const emoji = emojiRules.find(([re]) => re.test(name))?.[1] ?? '🍽️';
+  const bg = colors[hash(id ?? name) % colors.length];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+    <rect width="100%" height="100%" fill="${bg}"/>
+    <text x="50%" y="55%" font-size="200" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 };
+
+export const foodImages = {};
+
+for (const r of allRecipes) {
+  foodImages[r.id] = makeCard(r.name, r.id);
+}
+
+// overwrite with a real photo wherever one exists
+for (const [p, url] of Object.entries(photos)) {
+  foodImages[p.split('/').pop().split('.')[0]] = url;
+}
+
+// use this in the card component instead of foodImages[meal.id]
+export const getFoodImage = (meal) =>
+  foodImages[meal.id] ?? makeCard(meal.name, meal.id);

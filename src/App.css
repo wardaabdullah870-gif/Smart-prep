@@ -258,27 +258,21 @@
   text-decoration: line-through;
   color: var(--text-muted);
 }
-
-/* Grocery List */
-.grocery-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-}
-
 .grocery-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  background: var(--card-bg);
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  text-transform: capitalize;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
 }
+
+.grocery-qty {
+  font-weight: 600;
+  color: #16a34a;
+}
+
 
 .grocery-item:hover {
   border-color: var(--primary);

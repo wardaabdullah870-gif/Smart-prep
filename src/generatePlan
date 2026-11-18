@@ -1,92 +1,142 @@
 // src/generatePlan.js
 import { allRecipes } from './recipes.js';
-import { foodImages } from './images.js'; // NEW: Import images
+import { foodImages } from './images.js';
 
-function getFilteredRecipes(profile) {
-  const { cuisine, dietType, healthCondition } = profile;
-  let baseRecipes = [...allRecipes];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const MEAL_TYPES = ["breakfast", "lunch", "dinner"];
 
-  const medicalRules = {
-    metabolic: ['White Rice', 'Honey', 'Sugar', 'Bread', 'Roti', 'Potatoes', 'Flattened Rice'],
-    digestive: ['Onion', 'Garlic', 'Beans', 'Lentils', 'Chickpeas', 'Milk', 'Cream', 'Spicy Chili'],
-    heart: ['Salt', 'Soy Sauce', 'Pickles', 'Papad', 'Processed Meat', 'Chips', 'Butter', 'Ghee', 'Mutton', 'Beef', 'Cheese'],
-    uric_acid: ['Beef', 'Mutton', 'Fish', 'Prawns', 'Spinach', 'Lentils', 'Chickpeas'],
-    kidney: ['Salt', 'Potatoes', 'Bananas', 'Oranges', 'Tomato']
-  };
+// Ingredients to exclude per health condition. The keys must match the
+// <option value="..."> values in Profile.jsx exactly.
+// General guidance only, not medical advice.
+const medicalRules = {
+  metabolic: ['White Rice', 'Honey', 'Sugar', 'Bread', 'Roti', 'Potatoes', 'Flattened Rice'],
+  digestive: ['Onion', 'Garlic', 'Beans', 'Lentils', 'Chickpeas', 'Milk', 'Cream', 'Spicy Chili'],
+  heart: ['Salt', 'Soy Sauce', 'Pickles', 'Papad', 'Processed Meat', 'Chips', 'Butter', 'Ghee', 'Mutton', 'Beef', 'Cheese'],
+  uric_acid: ['Beef', 'Mutton', 'Fish', 'Prawns', 'Spinach', 'Lentils', 'Chickpeas'],
+  kidney: ['Salt', 'Potatoes', 'Bananas', 'Oranges', 'Tomato'],
 
-  if (healthCondition && healthCondition !== 'none' && medicalRules[healthCondition]) {
-    const badIngredients = medicalRules[healthCondition];
-    baseRecipes = baseRecipes.filter(recipe => {
-      return !recipe.ingredients.some(ing => 
-        badIngredients.some(bad => ing.name.toLowerCase().includes(bad.toLowerCase()))
-      );
-    });
-  }
+  pcos: ['White Rice', 'Bread', 'Roti', 'Flour', 'Honey', 'Jam', 'Sugar', 'Potatoes', 'Noodles', 'Pasta'],
+  acidity: ['Tomato', 'Onion', 'Garlic', 'Spicy Chili', 'Peanuts'],
+  lactose_free: ['Yogurt', 'Cheese', 'Paneer', 'Cream', 'Butter', 'Ghee'],
+  gluten_free: ['Flour', 'Bread', 'Roti', 'Pasta', 'Noodles', 'Wheat', 'Tortilla', 'Pita Bread', 'Soy Sauce'],
+  nut_allergy: ['Peanuts'],
+  seafood_allergy: ['Fish', 'Prawns', 'Salmon', 'Tuna'],
+  egg_allergy: ['Eggs']
+};
 
-  if (cuisine && cuisine !== 'any') {
-    baseRecipes = baseRecipes.filter(r => r.cuisine === cuisine);
-  }
-  
-  if (dietType === 'veg') {
-    baseRecipes = baseRecipes.filter(r => r.dietType === 'veg' || r.dietType === 'vegan');
-  }
+// vegan ⊂ veg ⊂ eggetarian ⊂ non_veg
+const DIET_ALLOWED = {
+  vegan: ['vegan'],
+  veg: ['vegan', 'veg'],
+  eggetarian: ['vegan', 'veg', 'eggetarian'],
+};
 
-  return baseRecipes;
+// ---------- images ----------
+
+// Your own photos win: put files in src/assets/meals/ named by recipe id (3.jpg, 80.webp, ...)
+const localPhotos = import.meta.glob('./assets/meals/*.{jpg,jpeg,png,webp}', {
+  eager: true, query: '?url', import: 'default',
+});
+const localById = {};
+for (const [path, url] of Object.entries(localPhotos)) {
+  localById[path.split('/').pop().split('.')[0]] = url;
 }
+
+// A web photo is only trusted if no other dish uses the same URL
+const urlUse = {};
+Object.values(foodImages).forEach((u) => { urlUse[u] = (urlUse[u] || 0) + 1; });
+
+const withImage = (recipe) => {
+  const web = foodImages[recipe.name];
+  const image = localById[recipe.id] || (web && urlUse[web] === 1 ? web : null);
+  return { ...recipe, image };
+};
+
+// ---------- helpers ----------
+
+function shuffle(list) {
+  const arr = [...list];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Removes duplicate dishes of the same meal type
+function dedupeByName(list) {
+  const seen = new Set();
+  return list.filter((r) => {
+    const key = `${r.name}|${r.type}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function matchesDiet(recipe, dietType) {
+  const allowed = DIET_ALLOWED[dietType];
+  return allowed ? allowed.includes(recipe.dietType) : true; // non_veg: no restriction
+}
+
+// ---------- filtering and ranking ----------
+
+// HARD rules only: diet and health. A recipe that breaks these is never shown.
+function getFilteredRecipes({ dietType, healthCondition }) {
+  let list = allRecipes.filter((r) => matchesDiet(r, dietType));
+
+  const badIngredients = medicalRules[healthCondition];
+  if (badIngredients) {
+    list = list.filter(
+      (recipe) =>
+        !recipe.ingredients.some((ing) =>
+          badIngredients.some((bad) => ing.name.toLowerCase().includes(bad.toLowerCase()))
+        )
+    );
+  }
+
+  return dedupeByName(list);
+}
+
+// SOFT preferences: cuisine and goal. Best matches come first, random order among ties.
+// Other recipes stay in the list at the end, so a small pool doesn't force repeats.
+function rankRecipes(recipes, { cuisine, goal }) {
+  const score = (r) => {
+    const cuisineMatch = !cuisine || cuisine === 'any' || r.cuisine === cuisine;
+    return (cuisineMatch ? 2 : 0) + (r.goal === goal ? 1 : 0);
+  };
+  return shuffle(recipes).sort((a, b) => score(b) - score(a));
+}
+
+// ---------- public API ----------
 
 export function generatePlan(profile) {
-  const { goal } = profile;
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const fullWeekPlan = [];
-
   const baseRecipes = getFilteredRecipes(profile);
 
-  const goalMatches = baseRecipes.filter(r => r.goal === goal);
-  const finalRecipePool = goalMatches.length >= 5 ? goalMatches : baseRecipes;
+  // One ranked pool per meal type, so breakfast never gets a dinner
+  const pools = {};
+  for (const type of MEAL_TYPES) {
+    pools[type] = rankRecipes(baseRecipes.filter((r) => r.type === type), profile);
+  }
 
-  let breakfasts = finalRecipePool.filter(r => r.type === 'breakfast');
-  let lunches = finalRecipePool.filter(r => r.type === 'lunch');
-  let dinners = finalRecipePool.filter(r => r.type === 'dinner');
-
-  const pickUnique = (list, fallbackList) => {
-    let sourceList = list.length > 0 ? list : fallbackList;
-    if (sourceList.length === 0) return null;
-    const randomIndex = Math.floor(Math.random() * sourceList.length);
-    const picked = sourceList[randomIndex];
-    if (list.length > 0) list.splice(randomIndex, 1);
-    return picked;
-  };
-
-  days.forEach((day) => {
+  return DAYS.map((day, dayIndex) => {
     const meals = [];
-    const b = pickUnique(breakfasts, finalRecipePool);
-    const l = pickUnique(lunches, finalRecipePool);
-    const d = pickUnique(dinners, finalRecipePool);
-
-    // NEW: Attach the image from foodImages to the meal before pushing it
-    if (b) meals.push({ ...b, image: foodImages[b.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" });
-    if (l) meals.push({ ...l, image: foodImages[l.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" });
-    if (d) meals.push({ ...d, image: foodImages[d.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" });
-
-    fullWeekPlan.push({ day, meals });
+    for (const type of MEAL_TYPES) {
+      const pool = pools[type];
+      if (pool.length === 0) continue; // no recipe of this type fits the settings
+      // Walks down the list, so no repeats until the pool is used up
+      meals.push(withImage(pool[dayIndex % pool.length]));
+    }
+    return { day, meals };
   });
-
-  return fullWeekPlan;
 }
 
-export function swapSingleMeal(profile, mealType) {
-  const { goal } = profile;
-  const baseRecipes = getFilteredRecipes(profile);
+// excludeNames = names of every meal currently in the plan, so a swap
+// never returns something already on screen. Returns null if nothing else fits.
+export function swapSingleMeal(profile, mealType, excludeNames = []) {
+  const candidates = getFilteredRecipes(profile).filter((r) => r.type === mealType);
+  const pool = rankRecipes(candidates, profile).filter((r) => !excludeNames.includes(r.name));
 
-  const goalMatches = baseRecipes.filter(r => r.goal === goal);
-  const finalRecipePool = goalMatches.length >= 5 ? goalMatches : baseRecipes;
-
-  const typeMatches = finalRecipePool.filter(r => r.type === mealType);
-  
-  if (typeMatches.length === 0) return null; 
-  
-  const picked = typeMatches[Math.floor(Math.random() * typeMatches.length)];
-  
-  // NEW: Attach the image to the swapped meal as well
-  return { ...picked, image: foodImages[picked.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80" };
+  if (pool.length === 0) return null;
+  return withImage(pool[0]);
 }

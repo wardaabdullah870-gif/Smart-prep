@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 import Profile from './Profile';
-import { generatePlan, swapSingleMeal } from './generatePlan'; 
-import { foodImages } from './images.js'; 
+import { generatePlan, swapSingleMeal } from './generatePlan';
+import { getFoodImage } from './images.js';
 import { Utensils, Calendar, ShoppingCart, Settings, Trash2, Check, Users } from 'lucide-react';
 import { supabase } from './supabase';
 import Auth from './Auth';
@@ -13,16 +13,17 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [weekPlan, setWeekPlan] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState('meals'); 
+  const [activeTab, setActiveTab] = useState('meals');
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [session, setSession] = useState(null);
-  const [sessionLoading, setSessionLoading] = useState(true); // NEW
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [notice, setNotice] = useState('');
 
   // 1. Check Auth Session
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setSessionLoading(false); // Auth check finished
+      setSessionLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -48,7 +49,6 @@ function App() {
           setIsLoadingData(false);
         });
     } else {
-      // If no session, stop loading data immediately
       setIsLoadingData(false);
     }
   }, [session]);
@@ -62,31 +62,39 @@ function App() {
     }).catch(err => console.error("Error saving data:", err));
   };
 
+  const showNotice = (text) => {
+    setNotice(text);
+    setTimeout(() => setNotice(''), 3000);
+  };
+
   const handleProfileSave = (userProfile) => {
     setProfile(userProfile);
     setIsGenerating(true);
     setActiveTab('meals');
-    
+
     setTimeout(() => {
       const newPlan = generatePlan(userProfile);
       setWeekPlan(newPlan);
       setIsGenerating(false);
       saveToDatabase(userProfile, newPlan);
-    }, 1000); 
+    }, 1000);
   };
 
   const handleSwapMeal = (dayIndex, mealIndex, mealType) => {
-    const newMeal = swapSingleMeal(profile, mealType);
+    const excludeNames = weekPlan.flatMap(day => day.meals.map(m => m.name));
+    const newMeal = swapSingleMeal(profile, mealType, excludeNames);
     if (newMeal) {
       const updatedPlan = JSON.parse(JSON.stringify(weekPlan));
       updatedPlan[dayIndex].meals[mealIndex] = newMeal;
       setWeekPlan(updatedPlan);
       saveToDatabase(profile, updatedPlan);
+    } else {
+      showNotice('No other options available for this meal with your settings.');
     }
   };
 
   const handleReset = () => {
-    saveToDatabase(null, []); 
+    saveToDatabase(null, []);
     setProfile(null);
     setWeekPlan([]);
   };
@@ -120,7 +128,7 @@ function App() {
 
   // 4. If user has no profile, show the setup screen
   if (!profile) return <Profile onSave={handleProfileSave} />;
-  
+
   // 5. If generating, show spinner
   if (isGenerating) {
     return (
@@ -131,25 +139,30 @@ function App() {
     );
   }
 
+  // --- GROCERY LIST ---
+  const householdSize = profile.householdSize || 1;
   const allMeals = weekPlan.flatMap(day => day.meals);
 
   const groceryDict = {};
   allMeals.forEach(meal => {
     if (meal.ingredients) {
+      // Recipe quantities are written for `servings` people (default 2),
+      // so scale by household size / servings.
+      const multiplier = householdSize / (meal.servings || 2);
       meal.ingredients.forEach(ing => {
-        const key = `${ing.name}-${ing.unit}`; 
-        const multiplier = profile.householdSize || 1;
+        const unit = ing.unit === 'cups' ? 'cup' : ing.unit;
+        const key = `${ing.name.toLowerCase()}-${unit}`;
         if (groceryDict[key]) {
-          groceryDict[key].qty += ing.qty * multiplier; 
+          groceryDict[key].qty += ing.qty * multiplier;
         } else {
-          groceryDict[key] = { name: ing.name, qty: ing.qty * multiplier, unit: ing.unit };
+          groceryDict[key] = { name: ing.name, qty: ing.qty * multiplier, unit };
         }
       });
     }
   });
 
   const groceryList = Object.values(groceryDict)
-    .map(item => ({ ...item, qty: Math.round(item.qty * 10) / 10 }))
+    .map(item => ({ ...item, qty: Math.round(item.qty * 100) / 100 }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
@@ -158,7 +171,7 @@ function App() {
         <div>
           <h1><Utensils size={28} color="#10b981" /> SmartPrep</h1>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Users size={14} /> Cooking for {profile.householdSize || 1} {(profile.householdSize === 1) ? 'person' : 'people'}
+            <Users size={14} /> Cooking for {householdSize} {householdSize === 1 ? 'person' : 'people'}
           </div>
         </div>
         <div className="header-actions">
@@ -171,6 +184,12 @@ function App() {
         </div>
       </div>
 
+      {notice && (
+        <div style={{ background: '#fef3c7', color: '#92400e', padding: '10px 14px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem' }}>
+          {notice}
+        </div>
+      )}
+
       <div className="tabs">
         <button className={`tab ${activeTab === 'meals' ? 'active' : ''}`} onClick={() => setActiveTab('meals')}>
           <Calendar size={18} /> Weekly Menu
@@ -182,24 +201,36 @@ function App() {
 
       {activeTab === 'meals' && (
         <div>
+          {profile.healthCondition && profile.healthCondition !== 'none' && (
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>
+              Meal suggestions are general guidance and are not medical advice. Please follow your doctor's or dietitian's recommendations.
+            </p>
+          )}
+
           {weekPlan.map((dayObj, dayIndex) => (
             <div key={dayObj.day}>
               <h2 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#374151', marginTop: '30px' }}>{dayObj.day}</h2>
+
+              {dayObj.meals.length === 0 && (
+                <p style={{ color: '#ef4444' }}>
+                  No matching recipes for this day. Try changing your settings with Edit.
+                </p>
+              )}
+
               <div className="day-grid">
                 {dayObj.meals.map((meal, mealIndex) => (
                   <div key={`${meal.id}-${meal.name}-${mealIndex}`} className={`meal-card ${meal.type}`} style={{ padding: 0, overflow: 'hidden', position: 'relative' }}>
-                    <button 
+                    <button
                       onClick={() => handleSwapMeal(dayIndex, mealIndex, meal.type)}
                       style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)', zIndex: 10 }}
                       title="Swap this meal"
                     >
                       🔄
                     </button>
-                    <img 
-                      src={meal.image || foodImages[meal.name] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80"} 
-                      alt={meal.name} 
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80"; }}
-                      style={{ width: '100%', height: '150px', objectFit: 'cover', backgroundColor: '#f3f4f6' }} 
+                    <img
+                      src={getFoodImage(meal)}
+                      alt={meal.name}
+                      style={{ width: '100%', height: '150px', objectFit: 'cover', backgroundColor: '#f3f4f6' }}
                     />
                     <div style={{ padding: '16px' }}>
                       <div className="meal-type">{meal.type}</div>
@@ -217,7 +248,7 @@ function App() {
         <div>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Your Shopping List</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-            Based on your weekly menu for {profile.householdSize || 1} {(profile.householdSize === 1) ? 'person' : 'people'}.
+            Based on your weekly menu for {householdSize} {householdSize === 1 ? 'person' : 'people'}.
           </p>
           {groceryList.length === 0 ? (
             <p style={{ color: '#ef4444' }}>No ingredients found. Please reset and generate a new plan.</p>
